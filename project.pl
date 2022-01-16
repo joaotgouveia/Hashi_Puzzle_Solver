@@ -3,7 +3,7 @@ gera_ilha(Ilha, P, Y, X) :- Ilha =.. [ilha, P, (Y, X)].
 extrai_ilhas_linha(Y, Linha, Ilhas) :- extrai_ilhas_linha(Y, 0, Linha, Ilhas).
 extrai_ilhas_linha(_, _, [], []).
 extrai_ilhas_linha(Y, X, [P|R], [Q|R1]) :-
-    P \== 0, !,
+    P =\= 0, !,
     X_N is X + 1,
     gera_ilha(Q, P, Y, X_N),
     extrai_ilhas_linha(Y, X_N, R, R1).
@@ -18,9 +18,6 @@ ilhas(Y, [L|R], Ilhas, IlhasFinal) :-
     extrai_ilhas_linha(Y_N, L, Ilhas_Linha),
     append(IlhasFinal, Ilhas_Linha, Ilhas_N),
     ilhas(Y_N, R, Ilhas, Ilhas_N).
-
-ordem_leitura(Ilhas, IlhasOrdenadas) :- ordem_leitura(Ilhas, IlhasOrdenadas, []).
-ordem_leitura([], IlhasOrdenadas, IlhasOrdenadas).
 
 ilhas_x(Ilha1, Ilha2) :-
     Ilha1 =.. [_, _, (Y, X)],
@@ -68,11 +65,13 @@ vizinhas_x(Ilhas, Ilha, VizinhasY, [C,B], Y_Sum, Y_MAX) :-
     Ilha =.. [_,_,(Y,_)],
     findall(Ilha1, (member(Ilha1, Ilhas), Ilha1 =.. [_,_,(Y1,_)], Y1 =:= -(Y,Y_Sum_N)), VizinhoCima),
     C \= [_],
+    B = [_],
     vizinhas_x(Ilhas, Ilha, VizinhasY, [VizinhoCima, B], Y_Sum_N, Y_MAX).
 vizinhas_x(Ilhas, Ilha, VizinhasY, [C,B], Y_Sum, Y_MAX) :-
     Y_Sum_N is Y_Sum + 1,
     Ilha =.. [_,_,(Y,_)],
     findall(Ilha1, (member(Ilha1, Ilhas), Ilha1 =.. [_,_,(Y1,_)], Y1 =:= +(Y,Y_Sum_N)), VizinhoBaixo),
+    C = [_],
     B \= [_],
     vizinhas_x(Ilhas, Ilha, VizinhasY, [C, VizinhoBaixo], Y_Sum_N, Y_MAX).
 
@@ -93,27 +92,32 @@ vizinhas_y(Ilhas, Ilha, VizinhasX, [E,D], X_Sum, X_MAX) :-
 vizinhas_y(Ilhas, Ilha, VizinhasX, [E,D], X_Sum, X_MAX) :-
     X_Sum_N is X_Sum + 1,
     Ilha =.. [_,_,(_,X)],
-    findall(Ilha1, (member(Ilha1, Ilhas), Ilha1 =.. [_,_,(_,X1)], X1 =:= +(X,X_Sum_N)), VizinhoDir),
-    D \= [_],
-    vizinhas_y(Ilhas, Ilha, VizinhasX, [E, VizinhoDir], X_Sum_N, X_MAX).
+    findall(Ilha1, (member(Ilha1, Ilhas), Ilha1 =.. [_,_,(_,X1)], X1 =:= -(X,X_Sum_N)), VizinhoEsq),
+    E \= [_],
+    D = [_],
+    vizinhas_y(Ilhas, Ilha, VizinhasX, [VizinhoEsq, D], X_Sum_N, X_MAX).
 vizinhas_y(Ilhas, Ilha, VizinhasX, [E,D], X_Sum, X_MAX) :-
     X_Sum_N is X_Sum + 1,
     Ilha =.. [_,_,(_,X)],
-    findall(Ilha1, (member(Ilha1, Ilhas), Ilha1 =.. [_,_,(_,X1)], X1 =:= -(X,X_Sum_N)), VizinhoEsq),
-    E \= [_],
-    vizinhas_y(Ilhas, Ilha, VizinhasX, [VizinhoEsq, D], X_Sum_N, X_MAX).
+    findall(Ilha1, (member(Ilha1, Ilhas), Ilha1 =.. [_,_,(_,X1)], X1 =:= +(X,X_Sum_N)), VizinhoDir),
+    E = [_],
+    D \= [_],
+    vizinhas_y(Ilhas, Ilha, VizinhasX, [E, VizinhoDir], X_Sum_N, X_MAX).
 
 vizinhas(Ilhas, Ilha, Vizinhas) :-
     vizinhas_x(Ilhas, Ilha, VizinhasX),
     vizinhas_y(Ilhas, Ilha, VizinhasY),
     append(VizinhasX, VizinhasY, VizinhasAux),
-    findall(IlhaVizinha, (member(L, VizinhasAux), L = [IlhaVizinha]), Vizinhas).
+    VizinhasAux = [C, B, E, D],
+    VizinhasAuxOrdenado = [C, E, D, B],
+    findall(IlhaVizinha, (member(L, VizinhasAuxOrdenado), L = [IlhaVizinha]), Vizinhas).
 
-estado([], []).
-estado([Ilha|R], [Estado|R1]) :-
-    vizinhas(R, Ilha, Vizinhas),
+estado(Ilhas, Estado) :- estado(Ilhas, Estado, Ilhas).
+estado([], [],_).
+estado([Ilha|R], [Estado|R1], Ilhas) :-
+    vizinhas(Ilhas, Ilha, Vizinhas),
     Estado = [Ilha, Vizinhas, []],
-    estado(R, R1).
+    estado(R, R1, Ilhas).
 
 posicoes_entre_x(Pos1, Pos2, Posicoes) :- posicoes_entre_x(Pos1, Pos2, Posicoes, 0).
 posicoes_entre_x((Y, X1), (Y, X2), [], Pos_Sum) :-  X1 + Pos_Sum + 1 =:= X2.
