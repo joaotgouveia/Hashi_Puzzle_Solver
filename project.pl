@@ -49,7 +49,7 @@ y_max(Ilhas, Y_MAX) :-
 vizinha_baixo(Mult, Ilhas, Ilha, Vizinhas) :-
     include(ilhas_x(Ilha), Ilhas, Ilhas_N),
     y_max(Ilhas_N, Y_MAX),
-    vizinha_baixo(Ilhas_N, Ilha, Vizinhas, _, 0, Y_MAX, Mult).
+    vizinha_baixo(Ilhas_N, Ilha, Vizinhas, [], 0, Y_MAX, Mult).
 vizinha_baixo(_, _, VizinhaYFinal, VizinhaYFinal, _, _, _) :- VizinhaYFinal \= [].
 vizinha_baixo(_, Ilha, VizinhaYFinal, VizinhaYFinal, Y_Sum, Y_MAX, Mult) :-
     Ilha =.. [_,_,(Y,_)],
@@ -68,7 +68,7 @@ vizinha_baixo(Ilhas, Ilha, VizinhaY, [], Y_Sum, Y_MAX, Mult) :-
 vizinha_direita(Mult, Ilhas, Ilha, Vizinhas) :-
     include(ilhas_y(Ilha), Ilhas, Ilhas_N),
     x_max(Ilhas_N, X_MAX),
-    vizinha_direita(Ilhas_N, Ilha, Vizinhas, _, 0, X_MAX, Mult).
+    vizinha_direita(Ilhas_N, Ilha, Vizinhas, [], 0, X_MAX, Mult).
 vizinha_direita(_, _, VizinhaXFinal, VizinhaXFinal, _, _, _) :- VizinhaXFinal \= [].
 vizinha_direita(_, Ilha, VizinhaXFinal, VizinhaXFinal, X_Sum, X_MAX, Mult) :-
     Ilha =.. [_,_,(_,X)],
@@ -92,10 +92,6 @@ vizinhas(Ilhas, Ilha, Vizinhas) :-
     append(VizinhaC, VizinhaE, VizinhasAux),
     append(VizinhasAux, VizinhaD, VizinhasAux_N),
     append(VizinhasAux_N, VizinhaB, Vizinhas).
-
-
-
-
 
 estado(Ilhas, Estado) :- estado(Ilhas, Estado, Ilhas).
 estado([], [],_).
