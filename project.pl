@@ -141,9 +141,7 @@ vizinhas(Ilhas, Ilha, Vizinhas) :-
     vizinha_direita(-1, Ilhas, Ilha, VizinhaE),
     vizinha_baixo(1, Ilhas, Ilha, VizinhaB),
     vizinha_baixo(-1, Ilhas, Ilha, VizinhaC),
-    append(VizinhaC, VizinhaE, VizinhasAux),
-    append(VizinhasAux, VizinhaD, VizinhasAux_N),
-    append(VizinhasAux_N, VizinhaB, Vizinhas).
+    findall(Vizinha, (member([Vizinha], [VizinhaC, VizinhaE, VizinhaD, VizinhaB])), Vizinhas).
 
 %-----------------------------------------------------------------------------
 % estado(Ilhas, Estado):
@@ -153,9 +151,8 @@ vizinhas(Ilhas, Ilha, Vizinhas) :-
 %-----------------------------------------------------------------------------
 estado(Ilhas, Estado) :- estado(Ilhas, Estado, Ilhas).
 estado([], [],_).
-estado([Ilha|R], [Estado|R1], Ilhas) :-
+estado([Ilha|R], [[Ilha, Vizinhas, []]|R1], Ilhas) :-
     vizinhas(Ilhas, Ilha, Vizinhas),
-    Estado = [Ilha, Vizinhas, []],
     estado(R, R1, Ilhas).
 
 %-----------------------------------------------------------------------------
@@ -177,10 +174,9 @@ ordena([Key1, Key2], Lista, Lista_N) :-
 %-----------------------------------------------------------------------------
 posicoes_entre_x(Pos1, Pos2, Posicoes) :- posicoes_entre_x(Pos1, Pos2, Posicoes, 0).
 posicoes_entre_x((Y, X1), (Y, X2), [], Pos_Sum) :-  X1 + Pos_Sum + 1 =:= X2, !.
-posicoes_entre_x((Y, X1), (Y, X2), [P|R], Pos_Sum) :-
+posicoes_entre_x((Y, X1), (Y, X2), [(Y, X_N)|R], Pos_Sum) :-
     Pos_Sum_N is Pos_Sum + 1,
     X_N is X1 + Pos_Sum_N,
-    P = (Y, X_N),
     posicoes_entre_x((Y, X1), (Y, X2), R, Pos_Sum_N).
 
 %-----------------------------------------------------------------------------
@@ -191,10 +187,9 @@ posicoes_entre_x((Y, X1), (Y, X2), [P|R], Pos_Sum) :-
 %-----------------------------------------------------------------------------
 posicoes_entre_y(Pos1, Pos2, Posicoes) :- posicoes_entre_y(Pos1, Pos2, Posicoes, 0).
 posicoes_entre_y((Y1, X), (Y2, X), [], Pos_Sum) :-  Y1 + Pos_Sum + 1 =:= Y2, !.
-posicoes_entre_y((Y1, X), (Y2, X), [P|R], Pos_Sum) :-
+posicoes_entre_y((Y1, X), (Y2, X), [(Y_N, X)|R], Pos_Sum) :-
     Pos_Sum_N is Pos_Sum + 1,
     Y_N is Y1 + Pos_Sum_N,
-    P = (Y_N, X),
     posicoes_entre_y((Y1, X), (Y2, X), R, Pos_Sum_N).
 
 %-----------------------------------------------------------------------------
@@ -230,7 +225,7 @@ caminho_livre((Y1,X1), (Y2,X2), _, ilha(_,(Y1,X1)), ilha(_,(Y2,X2))) :- !.
 caminho_livre((Y2,X2), (Y1,X1), _, ilha(_,(Y1,X1)), ilha(_,(Y2,X2))) :- !.
 caminho_livre(_, _, Posicoes, ilha(_,(Y1,X1)), ilha(_,(Y2,X2))) :-
     posicoes_entre((Y1, X1), (Y2, X2), Caminho),
-    findall(El1, (member(El1, Posicoes), member(El2, Caminho), El1 = El2), []).
+    findall(El1, (member(El1, Posicoes), member(El1, Caminho)), []).
 
 %-----------------------------------------------------------------------------
 % actualiza_vizinhas_entrada(Pos1, Pos2, Posicoes, Entrada, Entrada_N):
@@ -259,7 +254,7 @@ actualiza_vizinhas_apos_pontes(Estado, Pos1, Pos2, Novo_Estado) :-
 % ja tem o numero maximo de pontes construidas.
 %-----------------------------------------------------------------------------
 ilhas_terminadas(Estado, Ilhas_Term) :-
-    findall(Ilha, (member(El, Estado), El = [Ilha, _, Pontes], Ilha = ilha(P,_), P \= 'X', length(Pontes, P)), Ilhas_Term).
+    findall(ilha(P, Cord), (member([ilha(P, Cord), _, Pontes], Estado), P \= 'X', length(Pontes, P)), Ilhas_Term).
 
 %-----------------------------------------------------------------------------
 % tira_ilhas_terminadas_entrada(Ilhas_Term, Entrada, Entrada_N):
@@ -268,7 +263,7 @@ ilhas_terminadas(Estado, Ilhas_Term) :-
 % das ilhas que ja estao terminadas.
 %-----------------------------------------------------------------------------
 tira_ilhas_terminadas_entrada(Ilhas_Term, [Ilha, Vizinhas, Pontes], [Ilha, Vizinhas_N, Pontes]) :-
-    findall(Vizinha, (member(Vizinha, Vizinhas), member(Terminada, Ilhas_Term), Vizinha = Terminada), Vizinhas_Term),
+    findall(Vizinha, (member(Vizinha, Vizinhas), member(Vizinha, Ilhas_Term)), Vizinhas_Term),
     subtract(Vizinhas, Vizinhas_Term, Vizinhas_N).
 
 %-----------------------------------------------------------------------------
@@ -333,4 +328,3 @@ junta_pontes(Estado, Num_Pontes, Ilha1, Ilha2, Novo_Estado) :-
     ordena([[1,2,2], [1,2,1]], Novo_Estado_Aux_Nao_Ordenado, Novo_Estado_Aux),
     trata_ilhas_terminadas(Novo_Estado_Aux, Novo_Estado_Aux_N),
     actualiza_vizinhas_apos_pontes(Novo_Estado_Aux_N, (Y1, X1), (Y2, X2), Novo_Estado).
-
