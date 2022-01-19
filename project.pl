@@ -141,7 +141,7 @@ vizinhas(Ilhas, Ilha, Vizinhas) :-
     vizinha_direita(-1, Ilhas, Ilha, VizinhaE),
     vizinha_baixo(1, Ilhas, Ilha, VizinhaB),
     vizinha_baixo(-1, Ilhas, Ilha, VizinhaC),
-    findall(Vizinha, (member([Vizinha], [VizinhaC, VizinhaE, VizinhaD, VizinhaB])), Vizinhas).
+    append([VizinhaC, VizinhaE, VizinhaD, VizinhaB], Vizinhas).
 
 %-----------------------------------------------------------------------------
 % estado(Ilhas, Estado):
